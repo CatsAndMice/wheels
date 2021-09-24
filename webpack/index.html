@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+
+
+        /**
+         * 1.将commonJs中的exports,require转化成对象与函数，以便浏览器识别
+         * 2.require的文件进行读取,以文件名为key,文件代码为value，封装成一个对象传入
+         * 3.require(入口文件),递归思想得到导出的结果 
+         */
+        (function (code) {
+            function require(file) {
+                var exports = {};
+                (function (exports, code) {
+                    eval(code);
+                }(exports, code[file]))
+                return exports;
+            }
+            require('index.js');
+        }({
+            './add.js': 'exports.default = function (a, b) {console.log(a + b);}',
+            'index.js': "var add =  require('./add.js').default;add(9,2)"
+        }))
+
+
+    </script>
+</body>
+
+</html>
