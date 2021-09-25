@@ -19,6 +19,7 @@ function getModule(file) {
     traverse(ast, {
         ImportDeclaration({ node }) {
             let dirName = path.dirname(file);//获取路径
+            console.log(path.join(dirName, node.source.value));
             let abspath = './' + path.join(dirName, node.source.value);//处理路径
             //收集依赖的文件
             deps[node.source.value] = abspath;
@@ -56,21 +57,25 @@ function parserModule(file) {
     return depsGraph
 }
 
-// parserModule('../index.js')
-// function boundle(file) {
-//     let depsGraph = JSON.stringify(parserModule(file));
-//     (function (code) {
-//         function require(file) {
-//             var exports = {};
-//             function astPath = function (){
-//                 return depsGraph[]
-//             }
-//             (function (require,exports, code) {
-//                 eval(code);
-//             }( ,exports, code[file]))
-//             return exports;
-//         }
-//         require('index.js');
-//     }(`${depsGraph}`))
+function boundle(file) {
+    let depsGraph = JSON.stringify(parserModule(file));
+    let str = `(function (depsGraph) {
+        function require(file) {
+            var exports = {};
+            function astPath (file) {
+                return require(depsGraph[file])
+            }
+            (function (require, exports, code) {
+                eval(code);
+            }(astPath, exports, depsGraph[file].code))
+            return exports;
+        }
+        require('${file}');
+    }(${depsGraph}))`
 
-// }
+    console.log(depsGraph, depsGraph[file], file);
+    !fs.existsSync('./dist') && fs.mkdirSync('./dist')
+    fs.writeFileSync('./dist/boundle.js', str);
+}
+
+boundle('../index.js')
